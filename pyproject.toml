@@ -1,0 +1,88 @@
+[project]
+name = "microfreak-tools"
+version = "0.1.0"
+description = "Read, write and patch an Arturia MicroFreak: presets, samples, wavetables, settings and firmware files. Not affiliated with Arturia."
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+requires-python = ">=3.11,<3.15"
+keywords = ["microfreak", "arturia", "midi", "sysex", "synthesizer", "firmware"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "Topic :: Multimedia :: Sound/Audio :: MIDI",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+
+# The ceiling tracks the MIDI backend's wheel coverage, and nothing else.
+# rtmidi2 1.5.0 (2026-10-07) publishes wheels through cp314; there is no cp315
+# wheel yet, and without one it builds from source, needs a C++ toolchain, and
+# a failed build takes the whole install with it -- including `speech preview`,
+# which needs no MIDI at all. Raise this to <3.16 when cp315 wheels appear.
+# Capping is cheap for a CLI: `uv tool install` and `pipx` provision their own
+# interpreter, so a user whose own Python is newer is never blocked.
+#
+# This used to be <3.13, for python-rtmidi, whose last release was 2023-11-20
+# and which stops at cp312. rtmidi2 binds the same RtMidi C++ library and is
+# still maintained; the four API differences are documented in
+# microfreak/midi.py.
+dependencies = [
+    # The LPC analysis and synthesis, and every encoder.
+    "numpy>=2.0",
+    # MIDI I/O. Imported inside microfreak.midi.Synth.__init__, not at module
+    # level, so a broken install of it does not take down the offline commands.
+    "rtmidi2>=1.5.0",
+    # USB control transfers for `fw flash`. Needs a libusb backend, but only
+    # when a flash command actually opens a device -- `import usb.core`
+    # succeeds without one.
+    "pyusb>=1.3.1",
+    # libusb itself, as a platform wheel, so `fw flash` needs no
+    # `brew install libusb`. The marker lists the architectures it publishes
+    # wheels for; there is no sdist, so an unlisted one would fail to install
+    # outright. Everywhere else, `flash.backend()` returns None and pyusb
+    # looks for a system libusb exactly as it always did.
+    "libusb-package>=1.0.30; platform_machine in 'x86_64 AMD64 arm64 aarch64'",
+    # Audio input for `render` and `speech preview`. The macOS and Windows wheels
+    # bundle PortAudio; on Linux it needs the system libportaudio2. Imported
+    # inside microfreak.audio, so a missing PortAudio only affects recording.
+    "sounddevice>=0.5.6",
+]
+
+[project.scripts]
+mfreak = "microfreak.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/gbryant/microfreak-tools"
+Issues = "https://github.com/gbryant/microfreak-tools/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["microfreak"]
+
+# The plugins are published as their own packages.
+[tool.hatch.build.targets.sdist]
+exclude = ["plugins/", "ignored/", "dist/"]
+
+# The first-party plugins live in plugins/ and are published separately. In
+# this checkout, `uv run` installs them too.
+[dependency-groups]
+dev = ["mfreak-speech", "mfreak-peek"]
+
+[tool.uv.workspace]
+members = ["plugins/*"]
+
+[tool.uv.sources]
+mfreak-speech = { workspace = true }
+mfreak-peek = { workspace = true }
+
+# Not installable from PyPI, and not needed by any command:
+#
+#   ffmpeg   `speech preview` and `speech analyze` read audio files
+#            through it. `mfreak doctor` reports whether it is present.

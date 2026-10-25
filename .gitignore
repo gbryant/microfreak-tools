@@ -1,0 +1,22 @@
+__pycache__/
+*.pyc
+.venv/
+dist/
+build/
+*.egg-info/
+
+# Arturia's binaries are NEVER committed here. Firmware payloads, .mff
+# containers, bootloader dumps and factory vocabulary are the user's own
+# property and every command takes them as an explicit argument. See NOTICE.
+*.mff
+*.raw
+*.bin
+# SysEx dumps and audio the tools produce. A .syx or a .wav off the
+# instrument is the user's own data, the same as the binaries above, and
+# `audition` writes WAVs when pointed at a directory with --out-dir.
+*.syx
+*.wav
+
+# Scratch space: anything in ignored/ stays out of git.
+ignored/
+.DS_Store

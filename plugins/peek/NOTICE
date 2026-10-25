@@ -1,0 +1,103 @@
+microfreak-tools
+Copyright 2025-2026 Greg Bryant
+
+This product includes software developed as original work by the above
+copyright holder, licensed under the Apache License, Version 2.0 (see
+LICENSE).
+
+It also includes third-party material, which is licensed separately and
+retains its own copyright. The sections below are the attributions those
+licenses require.
+
+
+================================================================================
+Mutable Instruments Plaits -- MIT
+================================================================================
+
+The MicroFreak's Speech engine is Mutable Instruments' Plaits LPC speech
+synthesiser. This was established by byte-exact comparison against
+`pichenettes/eurorack`, not by inference: the 14-byte frame struct, the
+15-entry phoneme table, the quantisation lookup tables, the 640-entry
+excitation pulse, and the word banks all match the published MIT source
+value for value. The evidence is recorded in the companion
+analysis repository, microfreak-emu.
+
+Because that upstream source is MIT, the tables in this repository are
+redistributable under the terms below. They are Emilie Gillet's work, not
+Arturia's and not this project's.
+
+The following files contain material derived from `pichenettes/eurorack`:
+
+    microfreak/lpc.py
+                       the energy, period and k0..k9 quantisation tables, and
+                       the LPC bitstream layout, from
+                       plaits/dsp/speech/lpc_speech_synth_controller.cc and
+                       plaits/dsp/speech/lpc_speech_synth.h
+
+    plugins/speech/mfreak_speech/render.py
+                       a Python port of LPCSpeechSynth, and the 640-entry
+                       int8 excitation pulse `lut_lpc_excitation_pulse`,
+                       from plaits/dsp/speech/lpc_speech_synth.cc and
+                       plaits/resources.cc
+
+Copyright 2016 Emilie Gillet.
+
+Author: Emilie Gillet (emilie.o.gillet@gmail.com)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+
+================================================================================
+Texas Instruments LPC10 speech data -- NOT redistributed
+================================================================================
+
+Plaits' five factory word banks are, in its own description, "LPC10-encoded
+speech data extracted from Texas Instruments ROMs". The MicroFreak's banks
+match them byte for byte.
+
+This repository does not contain that data and must not come to contain it.
+The tooling reads the banks out of a firmware image the user already owns,
+at run time, and never writes them into source or into a committed artefact.
+Keep it that way: the MIT licence covering the Plaits code around them is
+not an obvious grant for speech recorded off a TI ROM, and nothing here
+depends on redistributing it.
+
+
+================================================================================
+Arturia -- no code, no binaries, no affiliation
+================================================================================
+
+This project is not affiliated with, authorised by, endorsed by or connected
+to Arturia in any way. "Arturia" and "MicroFreak" are trademarks of their
+respective owners and are used here only to identify the hardware this
+tooling was written for.
+
+No Arturia code or data is included in this repository, and none should
+ever be added to it. There are no firmware images, no bootloader dumps, no
+factory vocabulary banks, no factory presets and no protocol captures here --
+not gitignored copies of them, not samples of them, none. `.gitignore` refuses
+`*.mff`, `*.raw` and `*.bin` as a second line of defence, but the first is that
+every command takes the file it needs as an explicit argument.
+
+Nothing is downloaded either. `fw patch` requires `--image`, pointing at a
+payload you already own, and refuses any payload whose sha256 is not the one
+its addresses were derived against.
+
+Source comments and docstrings here describe observed behaviour and give
+addresses within a firmware image. They do not reproduce it.
